@@ -17,8 +17,8 @@ window.minsize(500,500)
 
 data= getData() 
 def addToListOfTasks(taskName,userTime):
-    saveIntoDatabase(taskName,userTime)
-    MyRowLabel(tasksTimeFrame,taskName,userTime)
+    key = saveIntoDatabase(taskName,userTime)
+    MyRowLabel(tasksTimeFrame,key,taskName,userTime)
 
 def addButtonClick():
     inputDialog = MyDialog(window)
@@ -45,7 +45,7 @@ lbl2.grid(row=0,column=1)
 
 for eachData in data:
     for key,val in eachData.items():
-        MyRowLabel(tasksTimeFrame,val[0],int(val[1]))
+        MyRowLabel(tasksTimeFrame,key,val[0],int(val[1]))
 
 buttonFrame = Frame(window)
 buttonFrame.pack(side=BOTTOM,pady=10)

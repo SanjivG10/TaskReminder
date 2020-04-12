@@ -22,7 +22,8 @@ class MyRowLabel():
     counter = 1
     LABEL_WIDTH = 16
     dataHolderArray = [] 
-    def  __init__(self,parent,tasksName,timeForTasks,**kwargs):
+
+    def  __init__(self,parent,key,tasksName,timeForTasks,**kwargs):
         self.parent = parent  
         self.editLabel = EditLabel(parent,tasksName,MyRowLabel.LABEL_WIDTH,**kwargs)
 
@@ -35,57 +36,54 @@ class MyRowLabel():
 
         kwargs['maximum'] = maxTimes[0]
         kwargs['value'] = times[0]
-        yearProgressBar = Progressbar(progressBarContainerFrame,**kwargs)
-        yearProgressBar.grid(row=0,column=0)
+        self.yearProgressBar =self.yearProgressBar = Progressbar(progressBarContainerFrame,**kwargs)
+        self.yearProgressBar.grid(row=0,column=0)
         label = Label(progressBarContainerFrame,text='',padx=2)
         label.grid(row=0,column=1)
-        labelTime = Label(progressBarContainerFrame,text="{} years".format(times[0]),padx=2)
-        labelTime.grid(row=MyRowLabel.counter+1,column=0)
+        self.labelYear = Label(progressBarContainerFrame,text="{} years".format(times[0]),padx=2)
+        self.labelYear.grid(row=MyRowLabel.counter+1,column=0)
 
         kwargs['maximum'] = maxTimes[1]
         kwargs['value'] = times[1]
-        monthProgressBar = Progressbar(progressBarContainerFrame,**kwargs)
-        monthProgressBar.grid(row=0,column=2)
+        self.monthProgressBar = Progressbar(progressBarContainerFrame,**kwargs)
+        self.monthProgressBar.grid(row=0,column=2)
         label = Label(progressBarContainerFrame,text='',padx=2)
         label.grid(row=0,column=3)
-        labelTime = Label(progressBarContainerFrame,text="{} months".format(times[1]),padx=2)
-        labelTime.grid(row=MyRowLabel.counter+1,column=2)
+        self.labelMonth = Label(progressBarContainerFrame,text="{} months".format(times[1]),padx=2)
+        self.labelMonth.grid(row=MyRowLabel.counter+1,column=2)
 
 
         kwargs['maximum'] = maxTimes[2]
         kwargs['value'] = times[2]
-        dayProgressBar = Progressbar(progressBarContainerFrame,**kwargs)
-        dayProgressBar.grid(row=0,column=4)
+        self.dayProgressBar = Progressbar(progressBarContainerFrame,**kwargs)
+        self.dayProgressBar.grid(row=0,column=4)
         label = Label(progressBarContainerFrame,text='',padx=2)
         label.grid(row=0,column=5)
-        labelTime = Label(progressBarContainerFrame,text="{} days".format(times[2]),padx=2)
-        labelTime.grid(row=MyRowLabel.counter+1,column=4)
+        self.labelDay  = Label(progressBarContainerFrame,text="{} days".format(times[2]),padx=2)
+        self.labelDay.grid(row=MyRowLabel.counter+1,column=4)
 
 
         kwargs['maximum'] = maxTimes[3]
         kwargs['value'] = times[3]
-        hourProgressBar = Progressbar(progressBarContainerFrame,**kwargs)
-        hourProgressBar.grid(row=0,column=6)
+        self.hourProgressBar = Progressbar(progressBarContainerFrame,**kwargs)
+        self.hourProgressBar.grid(row=0,column=6)
         label = Label(progressBarContainerFrame,text='',padx=2)
         label.grid(row=0,column=7)
-        labelTime = Label(progressBarContainerFrame,text="{} hours".format(times[3]),padx=2)
-        labelTime.grid(row=MyRowLabel.counter+1,column=6)
+        self.labelHour = Label(progressBarContainerFrame,text="{} hours".format(times[3]),padx=2)
+        self.labelHour.grid(row=MyRowLabel.counter+1,column=6)
 
 
         kwargs['maximum'] = maxTimes[4]
         kwargs['value'] = times[4]
-        minuteProgressBar = Progressbar(progressBarContainerFrame,**kwargs)
-        minuteProgressBar.grid(row=0,column=8)
+        self.minuteProgressBar = Progressbar(progressBarContainerFrame,**kwargs)
+        self.minuteProgressBar.grid(row=0,column=8)
         label = Label(progressBarContainerFrame,text='',padx=2)
         label.grid(row=0,column=9)
-        labelTime = Label(progressBarContainerFrame,text="{} minutes".format(times[4]),padx=2)
-        labelTime.grid(row=MyRowLabel.counter+1,column=8)
+        self.labelMinute = Label(progressBarContainerFrame,text="{} minutes".format(times[4]),padx=2)
+        self.labelMinute.grid(row=MyRowLabel.counter+1,column=8)
 
-
-        f=Frame(parent,height=1,width=60,bg="black")
-        f.grid(row=MyRowLabel.counter+1)
-        MyRowLabel.counter+=2
-        MyRowLabel.dataHolderArray.append(self)
+        MyRowLabel.counter+=1
+        MyRowLabel.dataHolderArray.append([key,self])
 
     def destroy(self):
         self.progressBarContainerFrame.destroy() 
@@ -190,22 +188,26 @@ class MyDialog:
         hour = self.hourSpinner.get().strip()
         minute = self.minuteSpinner.get().strip()
 
+        Cyear, Cmonth, Cday, Chour, Cminute = map(int, time.strftime("%Y %m %d %H %M").split())
         day,month,year,hour,minute = map(int,[day,month,year,hour,minute])
 
-        Cyear, Cmonth, Cday, Chour, Cminute = map(int, time.strftime("%Y %m %d %H %M").split())
-
+        
+        
         selectedDateString = '{}-{}-{} {}:{}:{}'.format(year,month,day,hour,minute,0)
 
-        dt = datetime.strptime(selectedDateString, '%Y-%m-%d %H:%M:%S')
-        self.ts = time.mktime(dt.timetuple())
+        try:
+            dt = datetime.strptime(selectedDateString, '%Y-%m-%d %H:%M:%S')
+            self.ts = time.mktime(dt.timetuple())
+        except ValueError:
+            self.error='Date given is invalid.Check '
 
-        if not ((self.ts-time.time())/60>5):
+        if self.ts and not ((self.ts-time.time())/60>5):
             self.error = 'Date must be at least 5 minutes from your current time'
         
         if year-Cyear >5:
             self.error='Time difference is too much'
         
-        if (self.ts-time.time() < 0):
+        if ( self.ts and self.ts-time.time() < 0):
             self.error='The time looks like it is of past'
 
         self.taskVal = self.taskString.get()
@@ -247,12 +249,18 @@ class DeleteRow(MyRowLabel):
     def delData(self,key,data,editDialogRef,index):
         currentData = data[key]
         for key,val in currentData.items():
+            deletedDataDateKey=key
             delDatabase(key)
 
         editDialogRef.top.destroy()
 
-        MyRowLabel.dataHolderArray[index].destroy()
-        MyRowLabel.dataHolderArray.pop(index)
+        for index,eachMyRowLabelDataArray in enumerate(MyRowLabel.dataHolderArray):
+            keyOfThatVal = eachMyRowLabelDataArray[0]
+            valRef = eachMyRowLabelDataArray[1]
+            if keyOfThatVal==deletedDataDateKey:
+                valRef = eachMyRowLabelDataArray[1].destroy()    
+                MyRowLabel.dataHolderArray.pop(index)
+                break 
 
 
 class DeleteDialog():
@@ -268,28 +276,65 @@ class DeleteDialog():
 
 class EditRow(MyRowLabel):
     def __init__(self,frame,val,index,data,editDialogRef):
-        top = self.top = frame 
+        self.top = frame 
         l = Label(frame,text=val[0],padx=10,pady=10)
         l.grid(row=index,column=0) 
 
         times,maxTimes = getTimeMaxTime(val[1])
         
-        l = Label(frame,text=':'.join(times),padx=10,pady=10)
-        l.grid(row=index,column=1)
+        self.label = Label(frame,text=':'.join(times),padx=10,pady=10)
+        self.label.grid(row=index,column=1)
         
         b = MyButton(frame,text='Edit',key=index,padx=10,pady=2)
-        b['command'] = lambda: self.editData(b.key,data,editDialogRef,index) 
+        b['command'] = lambda: self.editData(b.key,data,editDialogRef) 
         b.grid(row=index,column=2)
 
-    def editData(self,key,data,editDialogRef,index):
+    def editData(self,key,data,editDialogRef):
+
         currentData = data[key]
-        key = list(currentData.keys())[0]
+        print(currentData)
+
+        keyDate = list(currentData.keys())[0]
         inputDialog = MyDialog(self.top,currentData)
         self.top.wait_window(inputDialog.top)
         if inputDialog.taskVal and inputDialog.ts:
-            updateTheListDatabase(key,inputDialog.taskVal,inputDialog.ts)
+            updateTheListDatabase(keyDate,inputDialog.taskVal,inputDialog.ts)
+        
         editDialogRef.top.destroy()
 
+        editedText = inputDialog.taskVal
+        editedTime = inputDialog.ts 
+
+        if len(editedText) > MyRowLabel.LABEL_WIDTH:
+            editedText = editedText[:MyRowLabel.LABEL_WIDTH-3] + '...'
+
+        times,maxTimes = getTimeMaxTime(editedTime)
+
+        for index,eachMyRowLabelDataArray in enumerate(MyRowLabel.dataHolderArray):
+            keyOfThatVal = eachMyRowLabelDataArray[0]
+            print(keyOfThatVal,keyDate)
+            if keyOfThatVal==keyDate:
+                editedRowLabel=  eachMyRowLabelDataArray[1]
+                break 
+        
+        editedRowLabel.editLabel.label['text']= editedText
+
+        editedRowLabel.yearProgressBar['value'] = times[0]
+        editedRowLabel.labelYear['text']= "{} years".format(times[0])
+
+        editedRowLabel.monthProgressBar['value'] = times[1]
+        editedRowLabel.labelMonth['text']= "{} months".format(times[1])
+
+        editedRowLabel.dayProgressBar['value'] = times[2]
+        editedRowLabel.labelDay['text']= "{} days".format(times[2])
+
+        editedRowLabel.hourProgressBar['value'] = times[3]
+        editedRowLabel.labelHour['text']= "{} hours".format(times[3])
+
+        editedRowLabel.minuteProgressBar['value'] = times[4]
+        editedRowLabel.labelMinute['text']= "{} minutes".format(times[4])
+
+        
 class EditDialog():
     def __init__(self,parent): 
         top = self.top = Toplevel(parent)

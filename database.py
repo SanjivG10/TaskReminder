@@ -33,6 +33,7 @@ def saveIntoDatabase(myTask,myTime,key=None):
     data[str(key)] = [myTask,myTime]
     myTasksRemainder.append(data)
     saveDatabase()
+    return key 
 
 def delDatabase(id):
     removed = False
